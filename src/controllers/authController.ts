@@ -1,6 +1,7 @@
 import { RequestHandler } from "express"
 import * as bcrypt from 'bcryptjs'
 import * as jwt from "jsonwebtoken"
+import { verify } from "jsonwebtoken"
 
 import User from "../models/user"
 
@@ -92,4 +93,23 @@ export const login: RequestHandler = async (req, res, next) => {
   } else {
     return res.status(406).json({ success: false, message: "Incorrect email or password" });
   }
+}
+
+export const getCurrentUser: RequestHandler = async (req, res) => {
+  if(!req.cookies.token) return res.status(200).json({ success: false, message: "You are not logged in" })
+
+  const secret = process.env.SECRET || 'mySecret'
+  const token = req.cookies.token.split(' ')[1]
+  const userData = <any>verify(token, secret)
+
+  
+  const user = await User.findOne({ email: userData.email })
+  if(!user) return res.status(500).json({ success: false, message: "Cannot find user right now"})
+
+  return res.status(200).json({ success: true, user: { email: user.email, name: user.name }})
+}
+
+export const logout: RequestHandler = async (req, res) => {
+  res.clearCookie('token')
+  res.status(200).json({ success: true, message: 'Logged out successfully'})
 }
