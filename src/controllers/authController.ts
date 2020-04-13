@@ -59,6 +59,8 @@ export const register: RequestHandler = async (req, res, next) => {
 export const login: RequestHandler = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  const cookies = req.cookies.token;
+  console.log('cookies', cookies)
   // Find user by email
   const user = await User.findOne({ email })
   // Check if user exists
@@ -72,7 +74,7 @@ export const login: RequestHandler = async (req, res, next) => {
     // User matched
     // Create JWT Payload
     const payload = {
-      id: user.id,
+      email: user.email,
       name: user.name,
     };
     const secret = process.env.SECRET || 'mySecret'
@@ -84,6 +86,11 @@ export const login: RequestHandler = async (req, res, next) => {
         expiresIn: 31556926 // 1 year in seconds
       },
       (err, token) => {
+        // set cookie
+        res.cookie('token', `Bearer ${token}`, {
+          maxAge: 24 * 60 * 60 * 1000,
+          httpOnly: true,
+        })
         res.json({
           success: true,
           token: "Bearer " + token

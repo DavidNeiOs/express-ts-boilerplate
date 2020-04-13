@@ -2,16 +2,28 @@ import  { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-
 import { PassportStatic } from 'passport'
 
 import User from "../models/user"
+import { Request } from 'express'
+
+const cookieStractor = function(req: Request) {
+  let token = null;
+  if(req && req.cookies) {
+    token = req.cookies['token'].split(' ')[1]
+  }
+
+  return token
+}
 
 const opts: StrategyOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  jwtFromRequest: cookieStractor,
   secretOrKey: process.env.SECRET
 }
 
 export default (passport: PassportStatic) => {
+  console.log('passport')
   passport.use(
     new JwtStrategy(opts, (jwt_payload, done) => {
-      User.findById(jwt_payload.id)
+      console.log('payload', jwt_payload)
+      User.findOne({ email: jwt_payload.email })
       .then(user => {
         if(user) {
           return done(null, user)

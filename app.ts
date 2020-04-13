@@ -20,7 +20,10 @@ dotenv.config();
 const MongoStore = connectMongo(session)
 
 // configure this to only accept requests from client
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
