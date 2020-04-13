@@ -1,6 +1,6 @@
 # Express-Ts-Boilerplate
 
-This boilerplate was intended for personal use but anyone can use it if they want to.
+This boilerplate was intended for personal use but anyone can use it if they want to. It comes with authentications routes handle with json webtokens and passport js.
 
 ## To start the server
 
