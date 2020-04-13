@@ -19,10 +19,8 @@ const opts: StrategyOptions = {
 }
 
 export default (passport: PassportStatic) => {
-  console.log('passport')
   passport.use(
     new JwtStrategy(opts, (jwt_payload, done) => {
-      console.log('payload', jwt_payload)
       User.findOne({ email: jwt_payload.email })
       .then(user => {
         if(user) {

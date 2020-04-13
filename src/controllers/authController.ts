@@ -4,16 +4,6 @@ import * as jwt from "jsonwebtoken"
 
 import User from "../models/user"
 
-export const isLoggedIn: RequestHandler = (req, res, next) => {
-  if(req.headers.authorization) {
-    next()
-    return
-  } else {
-    res.status(401).send({ success: false, message: 'You must be logged in' })
-  }
-}
-
-
 export const register: RequestHandler = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email })
   if(user) {
@@ -35,7 +25,7 @@ export const register: RequestHandler = async (req, res, next) => {
   // sign in directly
 
   const payload = {
-    id: userDb.id,
+    email: userDb.email,
     name: userDb.name
   }
 
@@ -48,9 +38,13 @@ export const register: RequestHandler = async (req, res, next) => {
       expiresIn: 31556926
     },
     (err, token) => {
+      res.cookie('token', `Bearer ${token}`, {
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      })
       res.json({
         success: true,
-        token: `Bearer ${token}`
+        user: payload
       })
     }
   )
@@ -59,8 +53,6 @@ export const register: RequestHandler = async (req, res, next) => {
 export const login: RequestHandler = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  const cookies = req.cookies.token;
-  console.log('cookies', cookies)
   // Find user by email
   const user = await User.findOne({ email })
   // Check if user exists
@@ -93,11 +85,11 @@ export const login: RequestHandler = async (req, res, next) => {
         })
         res.json({
           success: true,
-          token: "Bearer " + token
+          user: payload
         });
       }
     );
   } else {
-    return res.status(406).json({ success: false, message: "Passwords dont match" });
+    return res.status(406).json({ success: false, message: "Incorrect email or password" });
   }
 }
